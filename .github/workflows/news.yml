@@ -9,11 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Сбор новостей
         run: |
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://e-disclosure.ru/rss/events" -o raw.xml
           python3 parse_news.py > news.json
           cat news.json
+
       - name: Сохранить
         run: |
           git config user.name "Actions"
