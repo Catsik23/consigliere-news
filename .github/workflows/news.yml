@@ -9,31 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Сбор новостей
         run: |
           curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://e-disclosure.ru/rss/events" -o raw.xml
-          if [ -s raw.xml ]; then
-            python3 -c '
-import xml.etree.ElementTree as ET, json
-tree = ET.parse("raw.xml")
-root = tree.getroot()
-kw = ["дивиденд","байбэк","buyback","выкуп акций","отчёт","отчетность","МСФО","РСБУ","собрание акционеров","совет директоров"]
-news = []
-for item in root.iter("item"):
-    t = item.find("title")
-    d = item.find("description")
-    text = ((t.text or "") + " " + (d.text or "")).lower()
-    if any(k in text for k in kw):
-        news.append({"title": t.text or "", "desc": (d.text or "")[:300], "link": item.find("link").text or ""})
-with open("news.json", "w") as f:
-    json.dump(news, f, ensure_ascii=False, indent=2)
-print(f"Найдено: {len(news)}")
-'
-          else
-            echo '[]' > news.json
-          fi
-
+          python3 parse_news.py > news.json
+          cat news.json
       - name: Сохранить
         run: |
           git config user.name "Actions"
