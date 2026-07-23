@@ -1,0 +1,49 @@
+name: Сбор новостей
+
+on:
+  schedule:
+    - cron: '0 */4 * * *'  # Каждые 4 часа
+  workflow_dispatch:  # Ручной запуск
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Сбор новостей из e-disclosure
+        run: |
+          curl -sL -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" \
+            "https://e-disclosure.ru/rss/events" > raw.xml 2>/dev/null || echo "[]" > news.json
+          
+          # Если RSS сработал — фильтруем по ключевым словам
+          if [ -s raw.xml ]; then
+            python3 -c "
+import xml.etree.ElementTree as ET, json
+tree = ET.parse('raw.xml')
+root = tree.getroot()
+keywords = ['дивиденд', 'байбэк', 'buyback', 'выкуп акций', 'отчёт', 'отчетность', 'МСФО', 'РСБУ', 'собрание акционеров', 'совет директоров']
+news = []
+for item in root.iter('item'):
+    title = item.find('title')
+    desc = item.find('description')
+    text = ((title.text or '') + ' ' + (desc.text or '')).lower()
+    if any(k in text for k in keywords):
+        news.append({
+            'title': title.text if title is not None else '',
+            'description': desc.text[:300] if desc is not None else '',
+            'link': item.find('link').text if item.find('link') is not None else ''
+        })
+with open('news.json', 'w') as f:
+    json.dump(news, f, ensure_ascii=False, indent=2)
+print(f'Найдено: {len(news)}')
+"
+          fi
+      
+      - name: Сохраняем результат
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add news.json raw.xml 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Новости $(date +%Y-%m-%d_%H:%M)"
+          git push
