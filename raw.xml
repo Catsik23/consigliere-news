@@ -6,9 +6,9 @@
 <body>
   <div style="text-align: center;">
     <h1>Forbidden</h1>
-    <p id="REQUEST-DATE">Datetime: 2026-08-13 01:01:45 +0000</p>
-    <p id="REQUEST-IP">IP: 40.65.55.37</p>
-    <p id="REQUEST-ID">ID: j1LrCZrx88c1</p>
+    <p id="REQUEST-DATE">Datetime: 2026-08-13 05:26:36 +0000</p>
+    <p id="REQUEST-IP">IP: 104.209.10.226</p>
+    <p id="REQUEST-ID">ID: aQPckdoDB4Y1</p>
     <p id="ORIGIN-ID"></p>
     <p>If you are not a bot, please copy the report and send it to our support team.</p>
     <p><button onclick="copy()">Copy</button></p>
